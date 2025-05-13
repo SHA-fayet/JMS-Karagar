@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="prison-card p-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h3><i class="fas fa-exchange-alt"></i> Cell Transfers</h3>
+        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addTransferModal">
+            <i class="fas fa-plus"></i> New Transfer
+        </button>
+    </div>
+
+    <table class="table prison-table">
+        <thead>
+            <tr>
+                <th>Inmate</th>
+                <th>From Cell</th>
+                <th>To Cell</th>
+                <th>Transfer Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transfer in transfers %}
+            <tr>
+                <td>{{ transfer.inmate_name }}</td>
+                <td>{{ transfer.from_cell }}</td>
+                <td>{{ transfer.to_cell }}</td>
+                <td>{{ transfer.transfer_date }}</td>
+                <td>
+                    <a href="{{ url_for('transfers.delete_transfer', id=transfer.id) }}" 
+                       class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Transfer Modal -->
+<div class="modal fade" id="addTransferModal">
+    <div class="modal-dialog">
+        <div class="modal-content prison-card">
+            <div class="modal-header">
+                <h5 class="modal-title">New Cell Transfer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('transfers.add_transfer') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Inmate</label>
+                        <select class="form-select bg-dark text-white" name="inmate_id" required>
+                            {% for inmate in inmates %}
+                            <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>From Cell</label>
+                        <input type="text" class="form-control bg-dark text-white" 
+                               name="from_cell" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>To Cell</label>
+                        <input type="text" class="form-control bg-dark text-white" 
+                               name="to_cell" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Transfer Date</label>
+                        <input type="date" class="form-control bg-dark text-white" 
+                               name="transfer_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-prison">Save Transfer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Alerts</h2>
+<a href="{{ url_for('alerts.create_alert') }}">Create New Alert</a>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Inmate</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alert in alerts %}
+        <tr>
+            <td>{{ alert.id }}</td>
+            <td>{{ alert.alert_type }}</td>
+            <td>{{ alert.message }}</td>
+            <td>{{ alert.alert_date }}</td>
+            <td>{{ alert.status }}</td>
+            <td>{{ alert.inmate_id or 'N/A' }}</td>
+            <td>
+                {% if alert.status == 'Active' %}
+                <form method="POST" action="{{ url_for('alerts.resolve_alert', id=alert.id) }}">
+                    <button type="submit">Resolve</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

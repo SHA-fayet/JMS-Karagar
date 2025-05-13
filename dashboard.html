@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="prison-card p-4">
+    <h3 class="mb-4 text-center text-uppercase" style="color: var(--prison-text); font-weight: bold;">
+        <i class="fas fa-tachometer-alt"></i> কারাগার Dashboard
+    </h3>
+
+    <div class="row g-4">
+        <!-- Active Inmates -->
+        <div class="col-md-3">
+            <div class="prison-card p-4 text-center shadow-lg rounded">
+                <h5 class="text-prison fw-bold">Active Inmates</h5>
+                <h1 class="text-white display-4">{{ active_inmates | default(0) }}</h1>
+                <small class="text-muted">Currently incarcerated</small>
+            </div>
+        </div>
+
+        <!-- Released Inmates -->
+        <div class="col-md-3">
+            <div class="prison-card p-4 text-center shadow-lg rounded">
+                <h5 class="text-prison fw-bold">Released Inmates</h5>
+                <h1 class="text-white display-4">{{ released_inmates | default(0) }}</h1>
+                <small class="text-muted">Total releases</small>
+            </div>
+        </div>
+
+        <!-- Today's Visitors -->
+        <div class="col-md-3">
+            <div class="prison-card p-4 text-center shadow-lg rounded">
+                <h5 class="text-prison fw-bold">Today's Visitors</h5>
+                <h1 class="text-white display-4">{{ today_visitors | default(0) }}</h1>
+                <small class="text-muted">Visits scheduled</small>
+            </div>
+        </div>
+
+        <!-- Upcoming Releases -->
+        <div class="col-md-3">
+            <div class="prison-card p-4 text-center shadow-lg rounded">
+                <h5 class="text-prison fw-bold">Upcoming Releases</h5>
+                {% if upcoming_releases %}
+                    <ul class="list-unstyled">
+                        {% for inmate in upcoming_releases %}
+                            <li class="text-white fw-bold">{{ inmate[0] }} - <span class="text-warning">{{ inmate[1] }}</span></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No upcoming releases</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="prison-card p-3 rounded shadow-lg">
+                <h5 class="text-prison fw-bold"><i class="fas fa-chart-line"></i> Monthly Admissions</h5>
+                <canvas id="admissionsChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div class="col-md-4">
+            <div class="prison-card p-3 rounded shadow-lg">
+                <h5 class="text-prison fw-bold"><i class="fas fa-exclamation-triangle"></i> Recent Alerts</h5>
+                <div class="list-group">
+                    {% if recent_alerts %}
+                        {% for alert in recent_alerts %}
+                            <div class="list-group-item bg-danger text-white border border-warning">
+                                <small><i class="fas fa-exclamation-circle"></i> {{ alert }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item bg-dark text-white border">
+                            <small>No alerts available</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window.onload = function() {
+        const ctx = document.getElementById('admissionsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: JSON.parse('{{ chart_labels | safe }}'),
+                datasets: [{
+                    label: 'Inmate Admissions',
+                    data: JSON.parse('{{ chart_values | safe }}'),
+                    borderColor: '#ffcc00',
+                    backgroundColor: 'rgba(255, 204, 0, 0.2)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#ffffff', font: { size: 12 } } },
+                    y: { ticks: { color: '#ffffff', font: { size: 12 } } }
+                }
+            }
+        });
+    };
+</script>
+{% endblock %}

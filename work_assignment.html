@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Work Assignments{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="blood-text"><i class="fas fa-hammer me-2"></i> Work Assignments</h1>
+        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addWorkModal">
+            <i class="fas fa-plus-circle me-1"></i> Add Assignment
+        </button>
+    </div>
+    
+    <div class="card card-prison">
+        <div class="card-header card-header-prison d-flex justify-content-between align-items-center">
+            <h3><i class="fas fa-list me-2"></i> Current Assignments</h3>
+            <span class="badge bg-dark">{{ assignments|length }} active</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-prison table-hover">
+                    <thead>
+                        <tr>
+                            <th>Inmate</th>
+                            <th>Work Details</th>
+                            <th>Assigned</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>
+                                <strong>{{ assignment.inmate_name }}</strong>
+                                {% if assignment.supervisor %}
+                                <small class="d-block text-muted">Supervisor: {{ assignment.supervisor }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ assignment.work_detail }}</td>
+                            <td>{{ assignment.assigned_date }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if assignment.status == 'Assigned' %}bg-secondary
+                                    {% elif assignment.status == 'In Progress' %}bg-warning
+                                    {% else %}bg-success{% endif %}">
+                                    {{ assignment.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" 
+                                            data-bs-target="#editWorkModal{{ assignment.id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="{{ url_for('work.delete_work_assignment', id=assignment.id) }}" 
+                                       class="btn btn-outline-danger">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editWorkModal{{ assignment.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content card-prison">
+                                    <div class="modal-header card-header-prison">
+                                        <h5 class="modal-title">Update Work Status</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('work.update_work_status', id=assignment.id) }}">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select form-control-prison" name="status" required>
+                                                    <option value="Assigned" {% if assignment.status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                                                    <option value="In Progress" {% if assignment.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                    <option value="Completed" {% if assignment.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Completion Date (if completed)</label>
+                                                <input type="date" class="form-control form-control-prison" name="completion_date"
+                                                       value="{% if assignment.completion_date %}{{ assignment.completion_date }}{% endif %}">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-prison">Update Status</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Work Modal -->
+<div class="modal fade" id="addWorkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content card-prison">
+            <div class="modal-header card-header-prison">
+                <h5 class="modal-title"><i class="fas fa-hammer me-2"></i> New Work Assignment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('work.add_work_assignment') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Inmate</label>
+                        <select class="form-select form-control-prison" name="inmate_id" required>
+                            <option value="">Select Inmate</option>
+                            {% for inmate in inmates %}
+                            <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Work Details</label>
+                        <textarea class="form-control form-control-prison" name="work_detail" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Supervisor</label>
+                        <input type="text" class="form-control form-control-prison" name="supervisor">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assigned Date</label>
+                        <input type="date" class="form-control form-control-prison" name="assigned_date">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-prison">Assign Work</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

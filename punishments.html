@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="prison-card p-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h3><i class="fas fa-gavel"></i> Punishment Records</h3>
+        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addPunishmentModal">
+            <i class="fas fa-plus"></i> Add Punishment
+        </button>
+    </div>
+
+    <table class="table prison-table">
+        <thead>
+            <tr>
+                <th>Inmate</th>
+                <th>Punishment</th>
+                <th>Date Given</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for punishment in punishments %}
+            <tr>
+                <td>{{ punishment.inmate_name }}</td>
+                <td>{{ punishment.punishment_detail }}</td>
+                <td>{{ punishment.date_given }}</td>
+                <td>
+                    <button class="btn btn-sm btn-prison" data-bs-toggle="modal" 
+                            data-bs-target="#editPunishmentModal{{ punishment.id }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <a href="{{ url_for('punishments.delete_punishment', id=punishment.id) }}" 
+                       class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Punishment Modal -->
+<div class="modal fade" id="addPunishmentModal">
+    <div class="modal-dialog">
+        <div class="modal-content prison-card">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Punishment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('punishments.add_punishment') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Inmate</label>
+                        <select class="form-select bg-dark text-white" name="inmate_id" required>
+                            {% for inmate in inmates %}
+                            <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Punishment Details</label>
+                        <textarea class="form-control bg-dark text-white" 
+                                  name="punishment_detail" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Date Given</label>
+                        <input type="date" class="form-control bg-dark text-white" 
+                               name="date_given" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-prison">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

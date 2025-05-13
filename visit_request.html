@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Public Visit Request</h2>
+<form method="POST" action="{{ url_for('visit_request.submit_request') }}">
+    <label for="name">Visitor Name:</label>
+    <input type="text" id="name" name="name" required>
+    
+    <label for="relation">Relation:</label>
+    <input type="text" id="relation" name="relation">
+    
+    <label for="requested_date">Requested Visit Date:</label>
+    <input type="date" id="requested_date" name="requested_date" required>
+    
+    <label for="inmate_id">Inmate:</label>
+    <select id="inmate_id" name="inmate_id" required>
+        {% for inmate in inmates %}
+        <option value="{{ inmate.InmateID }}">{{ inmate.FirstName }} {{ inmate.LastName }}</option>
+        {% endfor %}
+    </select>
+    
+    <button type="submit">Submit Request</button>
+</form>
+{% endblock %}
