@@ -2,59 +2,73 @@
 
 {% block content %}
 <div class="prison-card p-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h3><i class="fas fa-users"></i> Visitor Management</h3>
-        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addVisitorModal">
-            <i class="fas fa-plus"></i> Add Visitor
-        </button>
-    </div>
+  <h3 class="mb-4 text-center text-uppercase text-prison fw-bold">
+    <i class="fas fa-users"></i> Visitor Records
+  </h3>
 
-    <table class="table prison-table">
-        <thead>
-            <tr>
-                <th>Visitor</th>
-                <th>Inmate</th>
-                <th>Relation</th>
-                <th>Visit Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td><span class="badge bg-success">Approved</span></td>
-            </tr>
-        </tbody>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="text-end mb-3">
+    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addVisitorModal">
+      <i class="fas fa-plus"></i> Add Visitor
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-bordered table-striped rounded shadow">
+      <thead class="text-warning">
+        <tr>
+          <th>Visitor Name</th>
+          <th>Relation</th>
+          <th>Visit Date</th>
+          <th>Inmate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in visitors %}
+        <tr>
+          <td>{{ v[2] }}</td>
+          <td>{{ v[3] }}</td>
+          <td>{{ v[4] }}</td>
+          <td>{{ v[-1] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 </div>
 
 <!-- Add Visitor Modal -->
-<div class="modal fade" id="addVisitorModal">
-    <div class="modal-dialog">
-        <div class="modal-content prison-card">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Visitor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">Visitor Name</label>
-                        <input type="text" class="form-control bg-dark text-white">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Inmate</label>
-                        <select class="form-select bg-dark text-white">
-                            <option>Select Inmate</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-prison">Save Visitor</button>
-                </form>
-            </div>
+<div class="modal fade" id="addVisitorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form action="/add_visitor" method="POST" class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title text-warning">Add Visitor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Inmate</label>
+          <select name="inmate_id" class="form-select bg-dark text-white border-secondary" required>
+            {% for inmate in inmates %}
+              <option value="{{ inmate[0] }}">{{ inmate[1] }}</option>
+            {% endfor %}
+          </select>
         </div>
-    </div>
+        <input name="visitor_name" class="form-control mb-2 bg-dark text-white border-secondary" placeholder="Visitor Name" required>
+        <input name="relation" class="form-control mb-2 bg-dark text-white border-secondary" placeholder="Relation" required>
+        <input name="visit_date" type="date" class="form-control mb-2 bg-dark text-white border-secondary" required>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Add Visitor</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
