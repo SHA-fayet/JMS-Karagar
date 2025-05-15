@@ -23,6 +23,8 @@ def create_app():
     from .routes.search import search_bp
     from .routes.visit_request import visit_request_bp
     from .routes.alerts import alerts_bp
+    from .routes.work_assignments import work_assignments_bp
+
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -35,6 +37,8 @@ def create_app():
     app.register_blueprint(search_bp)
     app.register_blueprint(visit_request_bp)
     app.register_blueprint(alerts_bp)
+    app.register_blueprint(work_assignments_bp)
+
 
     # ✅ Only start scheduler once
     start_scheduler()
