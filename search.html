@@ -2,41 +2,61 @@
 
 {% block content %}
 <div class="prison-card p-4">
-    <h3 class="mb-4"><i class="fas fa-search"></i> Advanced Search</h3>
-    
-    <form method="GET" action="{{ url_for('search.search') }}">
-        <div class="input-group mb-4">
-            <input type="text" class="form-control bg-dark text-white" 
-                   name="q" placeholder="Search..." value="{{ query }}">
-            <select class="form-select bg-dark text-white" name="category">
-                <option value="inmates" {% if category == 'inmates' %}selected{% endif %}>Inmates</option>
-                <option value="visitors" {% if category == 'visitors' %}selected{% endif %}>Visitors</option>
-                <option value="cells" {% if category == 'cells' %}selected{% endif %}>Cells</option>
-            </select>
-            <button type="submit" class="btn btn-prison">Search</button>
-        </div>
-    </form>
+  <h3 class="text-center text-uppercase mb-4" style="color: var(--prison-text); font-weight: bold;">
+    <i class="fas fa-search me-2"></i> কারাগার Record Search
+  </h3>
 
-    {% if results %}
-    <div class="search-results">
-        <h5>Results ({{ results|length }} found)</h5>
-        <div class="list-group">
-            {% for result in results %}
-            <div class="list-group-item bg-dark text-white">
-                {% if category == 'inmates' %}
-                    <i class="fas fa-user-lock me-2"></i>
-                    {{ result.name }} - {{ result.crime }}
-                {% elif category == 'visitors' %}
-                    <i class="fas fa-users me-2"></i>
-                    {{ result.visitor_name }} visiting {{ result.inmate_name }}
-                {% else %}
-                    <i class="fas fa-door-closed me-2"></i>
-                    Cell {{ result.cell_number }} ({{ result.current_occupancy }}/{{ result.capacity }})
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
+  <form method="get" action="/search" class="row g-3 mb-4">
+    <div class="col-md-5">
+      <input type="text" name="q" class="form-control form-control-prison" placeholder="Search..." value="{{ query }}">
     </div>
-    {% endif %}
+    <div class="col-md-4">
+      <select name="category" class="form-select form-control-prison">
+        <option value="inmates" {% if category == 'inmates' %}selected{% endif %}>Inmates</option>
+        <option value="visitors" {% if category == 'visitors' %}selected{% endif %}>Visitors</option>
+        <option value="cells" {% if category == 'cells' %}selected{% endif %}>Cells</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-prison w-100">
+        <i class="fas fa-search me-2"></i> Search
+      </button>
+    </div>
+  </form>
+
+  {% if results %}
+    <div class="table-responsive">
+      <table class="table table-dark table-hover table-bordered rounded shadow">
+        <thead class="table-secondary text-dark">
+          {% if category == 'inmates' %}
+            <tr>
+              <th>ID</th><th>Name</th><th>Crime</th><th>Sentence</th><th>Status</th>
+            </tr>
+          {% elif category == 'visitors' %}
+            <tr>
+              <th>ID</th><th>Visitor Name</th><th>Relation</th><th>Visit Date</th><th>Inmate ID</th>
+            </tr>
+          {% elif category == 'cells' %}
+            <tr>
+              <th>ID</th><th>Cell Number</th><th>Block</th><th>Status</th>
+            </tr>
+          {% endif %}
+        </thead>
+        <tbody>
+          {% for row in results %}
+            <tr>
+              {% for key, value in row.items() %}
+                <td>{{ value }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% elif query %}
+    <div class="alert alert-warning prison-alert mt-3">
+      <i class="fas fa-exclamation-circle me-2"></i> No results found for "{{ query }}" in {{ category }}.
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
