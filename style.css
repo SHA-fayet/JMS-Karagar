@@ -45,3 +45,9 @@ input, button {
     max-width: 300px;
     display: block;
 }
+.hover-glow:hover {
+  background-color: #f8f9fa;
+  color: #1e1e2f !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease-in-out;
+}
