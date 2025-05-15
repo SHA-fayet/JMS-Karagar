@@ -1,4 +1,3 @@
-# app/routes/visitors.py
 from flask import Blueprint, render_template, request, redirect, session, flash
 from app import mysql
 from .auth import login_required
@@ -9,6 +8,8 @@ visitors_bp = Blueprint('visitors', __name__)
 @login_required
 def view_visitors():
     cur = mysql.connection.cursor()
+    
+    # Visitor list with inmate names
     cur.execute("""
         SELECT v.*, i.name AS inmate_name 
         FROM visitors v
@@ -16,8 +17,13 @@ def view_visitors():
         ORDER BY visit_date DESC
     """)
     visitors = cur.fetchall()
+    
+    # Fetch active inmates for dropdown
+    cur.execute("SELECT id, name FROM inmates WHERE status = 'Active'")
+    inmates = cur.fetchall()
+    
     cur.close()
-    return render_template('visitors.html', visitors=visitors)
+    return render_template('visitors.html', visitors=visitors, inmates=inmates)
 
 @visitors_bp.route('/add_visitor', methods=['POST'])
 @login_required
