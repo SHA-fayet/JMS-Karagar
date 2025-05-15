@@ -3,14 +3,14 @@ from app import mysql
 from datetime import datetime
 from .auth import login_required
 
-work_bp = Blueprint('work', __name__)
+work_assignments_bp = Blueprint('work_assignments', __name__)
 
-@work_bp.route('/work_assignments')
+@work_assignments_bp.route('/work_assignments')
 @login_required
 def view_work_assignments():
-    cur = mysql.connection.cursor()
-    
-    # Get all work assignments with inmate names
+    from MySQLdb.cursors import DictCursor
+    cur = mysql.connection.cursor(DictCursor)  # ← use DictCursor
+
     cur.execute("""
         SELECT w.*, i.name as inmate_name 
         FROM work_assignments w
@@ -18,17 +18,17 @@ def view_work_assignments():
         ORDER BY w.assigned_date DESC
     """)
     assignments = cur.fetchall()
-    
-    # Get active inmates for dropdown
+
     cur.execute("SELECT id, name FROM inmates WHERE status = 'Active'")
     inmates = cur.fetchall()
-    
+
     cur.close()
     return render_template('work_assignments.html', 
                          assignments=assignments, 
                          inmates=inmates)
 
-@work_bp.route('/add_work_assignment', methods=['POST'])
+
+@work_assignments_bp.route('/add_work_assignment', methods=['POST'])
 @login_required
 def add_work_assignment():
     inmate_id = request.form['inmate_id']
@@ -39,7 +39,7 @@ def add_work_assignment():
     cur = mysql.connection.cursor()
     cur.execute(
         """INSERT INTO work_assignments 
-        (inmate_id, work_detail, assigned_date, supervisor, status) 
+        (inmate_id, assignment, assigned_date, supervisor, status) 
         VALUES (%s, %s, %s, %s, 'Assigned')""",
         (inmate_id, work_detail, assigned_date, supervisor)
     )
@@ -47,9 +47,10 @@ def add_work_assignment():
     cur.close()
     
     flash('Work assignment added!', 'success')
-    return redirect(url_for('work.view_work_assignments'))
+    return redirect(url_for('work_assignments.view_work_assignments'))
 
-@work_bp.route('/update_work_status/<int:id>', methods=['POST'])
+
+@work_assignments_bp.route('/update_work_status/<int:id>', methods=['POST'])
 @login_required
 def update_work_status(id):
     new_status = request.form['status']
@@ -57,7 +58,8 @@ def update_work_status(id):
     
     if new_status not in ['Assigned', 'In Progress', 'Completed']:
         flash('Invalid status!', 'danger')
-        return redirect(url_for('work.view_work_assignments'))
+        return redirect(url_for('work_assignments.view_work_assignments'))
+
     
     cur = mysql.connection.cursor()
     
@@ -74,9 +76,10 @@ def update_work_status(id):
     cur.close()
     
     flash('Work status updated!', 'success')
-    return redirect(url_for('work.view_work_assignments'))
+    return redirect(url_for('work_assignments.view_work_assignments'))
 
-@work_bp.route('/delete_work_assignment/<int:id>')
+
+@work_assignments_bp.route('/delete_work_assignment/<int:id>')
 @login_required
 def delete_work_assignment(id):
     cur = mysql.connection.cursor()
@@ -85,4 +88,4 @@ def delete_work_assignment(id):
     cur.close()
     
     flash('Work assignment deleted!', 'success')
-    return redirect(url_for('work.view_work_assignments'))
+    return redirect(url_for('work_assignments.view_work_assignments'))
