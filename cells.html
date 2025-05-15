@@ -1,71 +1,188 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cell Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: #838990;
+      padding: 2rem;
+      background-image: url('https://wallpapers.com/images/hd/jail-cell-background-bbdmxjueedm05hd6.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
 
-{% block content %}
-<div class="prison-card p-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h3><i class="fas fa-door-closed"></i> Cell Management</h3>
-        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addCellModal">
-            <i class="fas fa-plus"></i> Add Cell
-        </button>
-    </div>
+    h2 { color: #ffffff; }
 
-    <table class="table prison-table">
-        <thead>
-            <tr>
-                <th>Cell Number</th>
-                <th>Capacity</th>
-                <th>Occupancy</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cell in cells %}
-            <tr>
-                <td>{{ cell.cell_number }}</td>
-                <td>{{ cell.capacity }}</td>
-                <td>{{ cell.current_occupancy }}</td>
-                <td>
-                    <button class="btn btn-sm btn-prison" data-bs-toggle="modal" 
-                            data-bs-target="#editCellModal{{ cell.id }}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <a href="{{ url_for('cells.delete_cell', id=cell.id) }}" 
-                       class="btn btn-sm btn-danger">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    .table {
+      background-color: rgba(44, 47, 51, 0.4); /* Transparent dark */
+      color: #dee2e6;
+      border-radius: 10px;
+      overflow: hidden;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .table th {
+      background-color: rgba(52, 58, 64, 0.6);
+      color: #adb5bd;
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) {
+      background-color: rgba(42, 45, 48, 0.4);
+    }
+
+    .btn-primary, .btn-warning, .btn-success {
+      border: none;
+    }
+
+    .modal-content {
+      background-color: #2c2f33;
+      color: #656a70;
+      border-radius: 8px;
+    }
+
+    .form-control {
+      background-color: #1e1e2f;
+      color: #676262;
+      border: 1px solid #495057;
+    }
+
+    .btn-close {
+      filter: invert(1);
+    }
+
+    .modal-header, .modal-footer {
+      border-color: #444;
+    }
+  </style>
+
+</head>
+<body>
+<div class="container">
+  <h2 class="mb-4">Cell List</h2>
+
+  {% if session['role'] == 'admin' %}
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add New Cell</button>
+  {% endif %}
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Cell Number</th>
+        <th>Capacity</th>
+        <th>Current Occupants</th>
+        {% if session['role'] == 'admin' %}
+        <th>Actions</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for cell in cells %}
+        <tr>
+          <td>{{ cell.cell_number }}</td>
+          <td>{{ cell.capacity }}</td>
+          <td>{{ cell.current_occupants }}</td>
+          {% if session['role'] == 'admin' %}
+          <td>
+            <button class="btn btn-sm btn-warning editBtn"
+                    data-id="{{ cell.id }}"
+                    data-cell_number="{{ cell.cell_number }}"
+                    data-capacity="{{ cell.capacity }}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal">Edit</button>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
-<!-- Add Cell Modal -->
-<div class="modal fade" id="addCellModal">
-    <div class="modal-dialog">
-        <div class="modal-content prison-card">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Cell</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('cells.add_cell') }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Cell Number</label>
-                        <input type="text" class="form-control bg-dark text-white" 
-                               name="cell_number" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Capacity</label>
-                        <input type="number" class="form-control bg-dark text-white" 
-                               name="capacity" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-prison">Add Cell</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addCellForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Cell</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="cell_number" class="form-control mb-2" placeholder="Cell Number" required>
+        <input name="capacity" type="number" class="form-control" placeholder="Capacity" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
 </div>
-{% endblock %}
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editCellForm" class="modal-content">
+      <input type="hidden" name="id" id="editId">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Cell</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="cell_number" id="editCellNumber" class="form-control mb-2" placeholder="Cell Number" required>
+        <input name="capacity" type="number" id="editCapacity" class="form-control" placeholder="Capacity" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-warning" type="submit">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Add Cell
+  document.getElementById('addCellForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/add_cell', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error || 'Error');
+      location.reload();
+    });
+  });
+
+  // Populate Edit Modal
+  document.querySelectorAll('.editBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('editId').value = btn.dataset.id;
+      document.getElementById('editCellNumber').value = btn.dataset.cell_number;
+      document.getElementById('editCapacity').value = btn.dataset.capacity;
+    });
+  });
+
+  // Edit Cell
+  document.getElementById('editCellForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const formData = new FormData(this);
+    fetch(`/edit_cell/${id}`, {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error || 'Error');
+      location.reload();
+    });
+  });
+</script>
+</body>
+</html>
