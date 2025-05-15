@@ -1,38 +1,73 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prison Alerts</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      border-radius: 0.75rem;
+    }
+    .badge {
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4">🔔 Active Prison Alerts</h2>
 
-{% block content %}
-<h2>Alerts</h2>
-<a href="{{ url_for('alerts.create_alert') }}">Create New Alert</a>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Message</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Inmate</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
+    {% if alerts %}
+      <div class="row">
         {% for alert in alerts %}
-        <tr>
-            <td>{{ alert.id }}</td>
-            <td>{{ alert.alert_type }}</td>
-            <td>{{ alert.message }}</td>
-            <td>{{ alert.alert_date }}</td>
-            <td>{{ alert.status }}</td>
-            <td>{{ alert.inmate_id or 'N/A' }}</td>
-            <td>
-                {% if alert.status == 'Active' %}
-                <form method="POST" action="{{ url_for('alerts.resolve_alert', id=alert.id) }}">
-                    <button type="submit">Resolve</button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-start border-4 border-warning">
+              <div class="card-body">
+                <h5 class="card-title">
+                  {{ alert.name }}
+                  <span class="badge bg-warning text-dark">Release</span>
+                </h5>
+                <p class="card-text">{{ alert.message }}</p>
+                <small class="text-muted">Date: {{ alert.alert_date }}</small><br/>
+                <button class="btn btn-sm btn-outline-success mt-3 resolve-btn" data-id="{{ alert.id }}">
+                  Resolve
+                </button>
+              </div>
+            </div>
+          </div>
         {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">
+        No active alerts at the moment.
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    document.querySelectorAll('.resolve-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.id;
+        fetch(`/resolve_alert/${id}`, {
+          method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message) {
+            alert(data.message);
+            location.reload();
+          } else {
+            alert(data.error || 'Error resolving alert');
+          }
+        });
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
