@@ -2,52 +2,75 @@
 
 {% block content %}
 <div class="prison-card p-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h3><i class="fas fa-bell"></i> System Notifications</h3>
-        <button class="btn btn-prison" data-bs-toggle="modal" data-bs-target="#addNotificationModal">
-            <i class="fas fa-plus"></i> New Notification
-        </button>
-    </div>
+  <h3 class="text-center text-prison fw-bold mb-4">
+    <i class="fas fa-bell"></i> System Notifications & Alerts
+  </h3>
 
-    <div class="list-group">
-        {% for notification in notifications %}
-        <div class="list-group-item bg-dark text-white mb-2">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <h6>{{ notification.message }}</h6>
-                    <small class="text-muted">{{ notification.created_at }}</small>
-                </div>
-                <a href="{{ url_for('notifications.delete_notification', id=notification.id) }}" 
-                   class="btn btn-sm btn-danger">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} shadow-sm">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-<!-- Add Notification Modal -->
-<div class="modal fade" id="addNotificationModal">
-    <div class="modal-dialog">
-        <div class="modal-content prison-card">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Notification</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('notifications.add_notification') }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Message</label>
-                        <textarea class="form-control bg-dark text-white" 
-                                  name="message" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-prison">Post Notification</button>
-                </div>
-            </form>
-        </div>
+  {% if session['role'] == 'admin' %}
+  <form action="/add_notification" method="POST" class="mb-4">
+    <div class="input-group">
+      <input name="message" class="form-control bg-dark text-white border-secondary" placeholder="Enter notification message..." required>
+      <button class="btn btn-success">Add Notification</button>
     </div>
+  </form>
+  {% endif %}
+
+  <div class="prison-card mb-4 p-3 rounded shadow-lg">
+    <h5 class="text-prison fw-bold mb-3"><i class="fas fa-info-circle"></i> Notifications</h5>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped rounded">
+        <thead class="text-warning">
+          <tr>
+            <th>Message</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for n in notifications %}
+          <tr>
+            <td>{{ n[1] }}</td>
+            <td>{{ n[2] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="prison-card p-3 rounded shadow-lg">
+    <h5 class="text-prison fw-bold mb-3"><i class="fas fa-exclamation-triangle"></i> Unresolved Alerts</h5>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped rounded">
+        <thead class="text-warning">
+          <tr>
+            <th>Inmate ID</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Message</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alert in alerts %}
+          <tr>
+            <td>{{ alert[1] }}</td>
+            <td>{{ alert[2] }}</td>
+            <td>{{ alert[3] }}</td>
+            <td>{{ alert[4] }}</td>
+            <td><span class="badge bg-warning text-dark">{{ alert[5] }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}
