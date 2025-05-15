@@ -28,24 +28,32 @@ def visit_request():
 @visit_request_bp.route('/manage_visits')
 @login_required
 def manage_visits():
-    cur = mysql.connection.cursor()
+    if session.get('role') not in ['admin', 'jailer']:
+        return "Unauthorized", 403
+
+    import MySQLdb.cursors
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("SELECT * FROM visit_requests ORDER BY date_requested DESC")
     visits = cur.fetchall()
     cur.close()
     return render_template('manage_visits.html', visits=visits)
 
+
+
 @visit_request_bp.route('/update_visit_status/<int:id>/<status>')
 @login_required
 def update_visit_status(id, status):
-    if status in ['Approved', 'Rejected']:
-        cur = mysql.connection.cursor()
-        cur.execute(
-            "UPDATE visit_requests SET status = %s WHERE id = %s",
-            (status, id)
-        )
-        mysql.connection.commit()
-        cur.close()
-        
-        flash(f'Visit {status.lower()}!', 'success')
-    
+    if session.get('role') not in ['admin', 'jailer']:
+        return "Unauthorized", 403
+
+    if status not in ['Approved', 'Rejected']:
+        flash('Invalid status!', 'danger')
+        return redirect(url_for('visit_request.manage_visits'))
+
+    cur = mysql.connection.cursor()
+    cur.execute("UPDATE visit_requests SET status = %s WHERE id = %s", (status, id))
+    mysql.connection.commit()
+    cur.close()
+
+    flash(f'Visit {status.lower()}!', 'success')
     return redirect(url_for('visit_request.manage_visits'))
