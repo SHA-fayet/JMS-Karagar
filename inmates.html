@@ -2,147 +2,162 @@
 
 {% block content %}
 <div class="prison-card p-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h3><i class="fas fa-user-lock"></i> Inmate Management</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInmateModal">
-            <i class="fas fa-plus"></i> Add Inmate
-        </button>
-    </div>
+  <h3 class="mb-4 text-center text-uppercase text-prison fw-bold">
+    <i class="fas fa-user-shield"></i> Active Inmates
+  </h3>
 
-    <table class="table table-hover table-dark rounded text-white">
-        <thead class="bg-primary text-white">
+  <div class="mb-3 text-end">
+    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addModal">
+      <i class="fas fa-plus"></i> Add Inmate
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-bordered table-striped rounded shadow">
+      <thead>
+        <tr class="text-warning">
+          <th>Name</th>
+          <th>Crime</th>
+          <th>Sentence Duration</th>
+          <th>Admission Date</th>
+          <th>Status</th>
+          <th>Sentence</th>
+          <th>Release Date</th>
+          <th>Cell</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inmate in inmates %}
+          {% if inmate.status == 'Active' %}
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Crime</th>
-                <th>Cell</th>
-                <th>Status</th>
-                <th>Actions</th>
+              <td>{{ inmate.name }}</td>
+              <td>{{ inmate.crime }}</td>
+              <td>{{ inmate.sentence_duration }}</td>
+              <td>{{ inmate.admission_date }}</td>
+              <td>{{ inmate.status }}</td>
+              <td>{{ inmate.sentence }}</td>
+              <td>{{ inmate.release_date }}</td>
+              <td>{{ inmate.cell_number or 'N/A' }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-warning editBtn"
+                        data-id="{{ inmate.id }}"
+                        data-name="{{ inmate.name }}"
+                        data-crime="{{ inmate.crime }}"
+                        data-sentence_duration="{{ inmate.sentence_duration }}"
+                        data-release="{{ inmate.release_date }}"
+                        data-sentence="{{ inmate.sentence }}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editModal">Edit</button>
+                <button class="btn btn-sm btn-outline-danger deleteBtn"
+                        data-id="{{ inmate.id }}">Delete</button>
+              </td>
             </tr>
-        </thead>
-        <tbody id="inmateTableBody"></tbody>
+          {% endif %}
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 </div>
 
-<!-- Add Inmate Modal -->
-<div class="modal fade" id="addInmateModal">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Inmate</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addInmateForm">
-                    <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Crime</label>
-                        <input type="text" name="crime" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Sentence Duration</label>
-                        <input type="text" name="sentence_duration" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Admission Date</label>
-                        <input type="date" name="admission_date" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Inmate</button>
-                </form>
-            </div>
-        </div>
-    </div>
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addForm" class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title text-warning">Add Inmate</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="name" class="form-control mb-2" placeholder="Name" required>
+        <input name="crime" class="form-control mb-2" placeholder="Crime" required>
+        <input name="sentence" class="form-control mb-2" placeholder="Sentence" required>
+        <input name="sentence_duration" class="form-control mb-2" placeholder="Sentence Duration" required>
+        <input name="admission_date" type="date" class="form-control" required>
+        <input name="release_date" type="date" class="form-control mt-2" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
 </div>
 
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editForm" class="modal-content bg-dark text-white">
+      <input type="hidden" name="id">
+      <div class="modal-header">
+        <h5 class="modal-title text-warning">Edit Inmate</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="name" class="form-control mb-2" placeholder="Name" required>
+        <input name="crime" class="form-control mb-2" placeholder="Crime" required>
+        <input name="sentence" class="form-control mb-2" placeholder="Sentence" required>
+        <input name="sentence_duration" class="form-control mb-2" placeholder="Sentence Duration" required>
+        <input name="release_date" type="date" class="form-control mb-2" placeholder="Release Date" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="submit">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    fetchInmates();
-});
-
-function fetchInmates() {
-    fetch('/api/inmates')
-        .then(response => response.json())
-        .then(data => {
-            let inmateTableBody = document.getElementById("inmateTableBody");
-            inmateTableBody.innerHTML = "";
-            
-            data.forEach(inmate => {
-                let row = `<tr>
-                    <td>${inmate.id}</td>
-                    <td>${inmate.name}</td>
-                    <td>${inmate.crime}</td>
-                    <td>${inmate.cell_number || 'Unassigned'}</td>
-                    <td><span class="badge ${inmate.status === 'Active' ? 'bg-danger' : 'bg-success'}">${inmate.status}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-warning edit-btn" data-id="${inmate.id}">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id="${inmate.id}">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </td>
-                </tr>`;
-                inmateTableBody.innerHTML += row;
-            });
-
-            attachEventListeners();
-        });
-}
-
-function attachEventListeners() {
-    document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.addEventListener("click", function() {
-            let id = this.getAttribute("data-id");
-            if (confirm("Are you sure you want to delete this inmate?")) {
-                fetch(`/delete_inmate/${id}`, { method: "POST" })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        fetchInmates();  // Refresh inmate list after deletion
-                    })
-                    .catch(error => console.error("Error:", error));
-            }
-        });
-    });
-
-    document.querySelectorAll(".edit-btn").forEach(btn => {
-        btn.addEventListener("click", function() {
-            let id = this.getAttribute("data-id");
-            let name = prompt("Enter new name:");
-            let crime = prompt("Enter new crime:");
-            let sentence_duration = prompt("Enter new sentence duration:");
-            
-            let formData = new FormData();
-            formData.append("name", name);
-            formData.append("crime", crime);
-            formData.append("sentence_duration", sentence_duration);
-
-            fetch(`/edit_inmate/${id}`, { method: "POST", body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    fetchInmates();  // Refresh inmate list after update
-                })
-                .catch(error => console.error("Error:", error));
-        });
-    });
-}
-
-document.getElementById('addInmateForm').addEventListener('submit', function(e) {
+  // ADD inmate
+  document.getElementById('addForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const formData = new FormData(this);
-    
     fetch('/add_inmate', { method: 'POST', body: formData })
-        .then(response => response.json())
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || data.error || 'Add failed');
+        if (data.message) location.reload();
+      });
+  });
+
+  // Populate Edit Modal
+  document.querySelectorAll('.editBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = document.getElementById('editForm');
+      form.id.value = button.dataset.id;
+      form.name.value = button.dataset.name;
+      form.crime.value = button.dataset.crime;
+      form.sentence.value = button.dataset.sentence;
+      form.sentence_duration.value = button.dataset.sentence_duration;
+      form.release_date.value = button.dataset.release;
+    });
+  });
+
+  // EDIT inmate
+  document.getElementById('editForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = this.id.value;
+    const formData = new FormData(this);
+    fetch(`/edit_inmate/${id}`, { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || data.error || 'Edit failed');
+        if (data.message) location.reload();
+      });
+  });
+
+  // DELETE inmate
+  document.querySelectorAll('.deleteBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      if (!confirm('Are you sure?')) return;
+      fetch(`/delete_inmate/${button.dataset.id}`, { method: 'POST' })
+        .then(res => res.json())
         .then(data => {
-            alert(data.message);
-            fetchInmates();  // Refresh list after adding inmate
-            document.getElementById("addInmateModal").classList.remove("show");
-        })
-        .catch(error => console.error("Error:", error));
-});
+          alert(data.message || data.error || 'Delete failed');
+          if (data.message) location.reload();
+        });
+    });
+  });
 </script>
 {% endblock %}
